@@ -12,22 +12,18 @@ public:
 	void rpsInitialize();
 	void saveData();
 	void loadData();
-	std::string randomClass(Character* character);
+	std::string randomAttack(Character* character);
 	void newChar();
 	void newOpponent(Character* character);
 	void setName();
 	void setName(std::string name);
-	void setClass(Character* character);
-	void setClass(std::string classChoice);
 	void setLevel();
 	void setLevel(Character* character);
 	void setStats();
 	void setExp();
 	void print();
-	void listClasses();
+	void listAttacks();
 	void promptName();
-	void promptClass();
-	void capsLock(std::string& input);
 	std::string formatText(std::string input);
 	void resting();
 	void levelUp();
@@ -35,13 +31,10 @@ public:
 	void battle(Character* player, Character* opponent);
 	void results(int result, std::string playerChoice, std::string opponentChoice, Character* player, Character* opponent);
 	int comparingChoices(int userChoice, int opponentChoice) const;
-	int comparingClasses(Character* player, Character* opponent);
 	int attackType(std::string choice);
-	int classType(std::string charClass);
-	bool checkClass(Character* character, std::string choice);
 	std::string selectAttack();
 	static constexpr int choices = 101;
-	std::string rps[choices][3];
+	std::string rps[choices][2];
 
 private:
 	std::random_device rd;
@@ -51,7 +44,7 @@ private:
 	std::uniform_int_distribution<int> levelDist;
 	int damage, currentHP, totalHP, level, experience;
 	static constexpr int dmgMult = 2;
-	std::string charName, charClass[2];
+	std::string charName;
 
 	
 	
