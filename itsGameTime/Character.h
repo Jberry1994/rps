@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <random>
 
@@ -35,7 +34,7 @@ public:
 	void rewards(Character* player, Character* opponent);
 	void battle(Character* player, Character* opponent);
 	void results(int result, std::string playerChoice, std::string opponentChoice, Character* player, Character* opponent);
-	int comparingChoices(int userChoice, int opponentChoice);
+	int comparingChoices(int userChoice, int opponentChoice) const;
 	int comparingClasses(Character* player, Character* opponent);
 	int attackType(std::string choice);
 	int classType(std::string charClass);

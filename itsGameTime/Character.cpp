@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Character.h"
-
+#include <iostream>
 
 Character::Character()
 	:
@@ -26,7 +26,7 @@ void Character::rpsInitialize()
 		{
 			std::getline(inData, temp, '-');
 			std::cout << temp << std::endl;
-			rps[i][j] = temp;
+				rps[i][j] = temp;
 		}
 	}
 	inData.close();
@@ -69,7 +69,7 @@ void Character::loadData()
 		std::getline(inData, totalHPtemp, '-');
 		std::getline(inData, leveltemp, '-');
 		std::getline(inData, exptemp, '-');
-		for (int i = 3; i < choices; i++)
+		for (int i = 0; i < choices; i++)
 		{
 			std::string temp;
 			std::getline(inData, temp, '-');
@@ -95,10 +95,10 @@ std::string Character::randomClass(Character* character)
 	do
 	{
 		int randNum = dist(rng);
-		if (character->rps[randNum][2] == "unlocked")
-		{
+		//if (character->rps[randNum][2] == "unlocked")
+		//{
 			randClass = rps[randNum][0];
-		}
+		//}
 	} while (randClass == " ");
 	return randClass;
 }
@@ -293,22 +293,22 @@ void Character::levelUp()
 		setExp();
 		experience += overage;
 		std::cout << "Level up!" << std::endl;
-		if (level >= 2)
-		{
-			if (classType(charClass[1]) == 0)
-			{
-				rps[3][2] = "unlocked";
-			}
-			else if (classType(charClass[1]) == 1)
-			{
-				rps[4][2] = "unlocked";
-			}
-			else if (classType(charClass[1]) == 2)
-			{
-				rps[5][2] = "unlocked";
-			}
-			std::cout << "You have unlocked a new attack!" << std::endl;
-		}
+		//if (level >= 2)
+		//{
+		//	if (classType(charClass[1]) == 0)
+		//	{
+		//		rps[3][2] = "unlocked";
+		//	}
+		//	else if (classType(charClass[1]) == 1)
+		//	{
+		//		rps[4][2] = "unlocked";
+		//	}
+		//	else if (classType(charClass[1]) == 2)
+		//	{
+		//		rps[5][2] = "unlocked";
+		//	}
+		//	std::cout << "You have unlocked a new attack!" << std::endl;
+		//}
 	}
 }
 
@@ -358,16 +358,16 @@ void Character::results(int result, std::string playerChoice, std::string oppone
 	{
 		std::cout << opponentChoice << " beats " << playerChoice;
 		std::cout << ", You lose!" << std::endl;
-		if (checkClass(opponent, opponentChoice))
-		{
-			player->currentHP -= opponent->damage * dmgMult;
-			std::cout << "You take " << opponent->damage  * dmgMult << " damage" << std::endl;
-		}
-		else
-		{
+		//if (checkClass(opponent, opponentChoice))
+		//{
+		//	player->currentHP -= opponent->damage * dmgMult;
+		//	std::cout << "You take " << opponent->damage  * dmgMult << " damage" << std::endl;
+		//}
+		//else
+		//{
 			player->currentHP -= opponent->damage;
 			std::cout << "You take " << opponent->damage << " damage" << std::endl;
-		}
+		//}
 		
 	}
 	else if (result == 2)
@@ -392,21 +392,21 @@ void Character::results(int result, std::string playerChoice, std::string oppone
 	}
 }
 
-int Character::comparingChoices(int userChoice, int opponentChoice)
+int Character::comparingChoices(int userChoice, int opponentChoice) const
 {
 	if (userChoice == opponentChoice)
-		return 0; // 0 for Draw
-	else if ((userChoice == 0 && opponentChoice == 1) || (userChoice == 1 && opponentChoice == 0))
-		return (userChoice == 0 ? 1 : 2);
-		
-	else if ((userChoice == 0 && opponentChoice == 2) || (userChoice == 2 && opponentChoice == 0))
-		return (userChoice == 0 ? 2 : 1);
-		
-	else if ((userChoice == 1 && opponentChoice == 2) || (userChoice == 2 && opponentChoice == 1))
-		return (userChoice == 1 ? 1 : 2);
-
+		return 0;
+	int userRange = userChoice + 50;
+	int userOverage;
+	userOverage = (userRange > choices ? userRange - choices : 0);
+	std::cout << "userRange: " << userRange << std::endl;
+	std::cout << "userOverage: " << userOverage << std::endl;
+	std::cout << "userChoice: " << userChoice << std::endl;
+	std::cout << "opponentChoice: " << opponentChoice << std::endl;
+	if (opponentChoice <= userOverage || (opponentChoice <= userRange && opponentChoice >= userChoice))
+		return 2;
 	else
-		return 3;
+		return 1;
 }
 
 int Character::comparingClasses(Character * player, Character * opponent)
@@ -457,7 +457,7 @@ int Character::attackType(std::string choice)
 	int counter = 0;
 	for (int i = 0; i < choices; i++)
 	{
-		if (choice == rps[i][0] && rps[i][2] == "unlocked")
+		if (choice == rps[i][0])
 		{
 			return stoi(rps[i][1]);
 		}
@@ -467,7 +467,7 @@ int Character::attackType(std::string choice)
 		}
 		if (counter == choices)
 		{
-			selectAttack();
+			attackType(selectAttack());
 		}
 
 	}
@@ -480,8 +480,7 @@ int Character::classType(std::string charClass)
 
 bool Character::checkClass(Character* character, std::string choice)
 {
-	//std::cout << charClass << " " << choice << std::endl;
-	return (stoi(character->charClass[1]) == attackType(choice));
+	return (std::stoi(character->charClass[1]) == attackType(choice));
 }
 
 std::string Character::selectAttack()
