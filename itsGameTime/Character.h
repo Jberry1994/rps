@@ -10,6 +10,7 @@ class Character
 public:
 	Character();
 	~Character();
+	void rpsInitialize();
 	void saveData();
 	void loadData();
 	std::string randomClass(Character* character);
@@ -40,9 +41,8 @@ public:
 	int classType(std::string charClass);
 	bool checkClass(Character* character, std::string choice);
 	std::string selectAttack();
-	static constexpr int choices = 6;
-	//std::string rps[choices][3];
-	std::string rps[choices][3] = { {"Rock", "0", "unlocked"}, {"Paper", "1", "unlocked"}, {"Scissors", "2", "unlocked"}, {"Dragonscim", "0", "locked"}, {"Ancientmagics", "1", "locked"}, {"Magicshortbow", "2", "locked"} };
+	static constexpr int choices = 101;
+	std::string rps[choices][3];
 
 private:
 	std::random_device rd;

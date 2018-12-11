@@ -15,6 +15,23 @@ Character::~Character()
 {
 }
 
+void Character::rpsInitialize()
+{
+	std::ifstream inData;
+	inData.open("rps-options.txt");
+	std::string temp;
+	for (int i = 0; i < choices; i++)
+	{
+		for (int j = 0; j <= 2; j++)
+		{
+			std::getline(inData, temp, '-');
+			std::cout << temp << std::endl;
+			rps[i][j] = temp;
+		}
+	}
+	inData.close();
+}
+
 void Character::saveData()
 {
 	std::ofstream outData;
@@ -23,7 +40,7 @@ void Character::saveData()
 		<< damage << "-" << currentHP << "-" 
 		<< totalHP << "-" << level << "-" 
 		<< experience << "-";
-	for (int i = 3; i < choices; i++)
+	for (int i = 0; i < choices; i++)
 	{
 		outData << rps[i][2] << "-";
 	}

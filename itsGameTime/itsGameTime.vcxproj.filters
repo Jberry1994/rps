@@ -37,5 +37,8 @@
     <Text Include="save-game.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="rps-options.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
