@@ -8,7 +8,8 @@ Character::Character()
 	rng(rd()),
 	dist(0, choices - 1),
 	namesDist(0,999),
-	levelDist(-1 , 1)
+	levelDist(-1, 1),
+	deckDist(0,deckSize - 1)
 {
 }
 
@@ -25,10 +26,20 @@ void Character::rpsInitialize()
 	{
 		for (int j = 0; j <= 1; j++)
 		{
-			std::getline(inData, temp, '-');
-			rps[i][j] = temp;
+			if (j == 0)
+			{
+				std::getline(inData, temp, '-');
+				rpsChoices[i] = temp;
+			}
+			else
+			{
+				std::getline(inData, temp, '-');
+				rpsValues[i] = std::stoi(temp);
+			}
 		}
 	}
+
+
 	inData.close();
 }
 
@@ -40,14 +51,18 @@ void Character::saveData()
 		<< damage << "-" << currentHP << "-" 
 		<< totalHP << "-" << level << "-" 
 		<< experience << "-";
+	for (int i = 0; i < deckSize; i++)
+	{
+		outData << deck[i] << "-";
+	}
 	std::cout << "Saving!" << std::endl;
 	outData.close();
-}
+}//jb-1-10-10-1-0-10-61--858993460-
 
 void Character::loadData()
 {
 	std::ifstream inData;
-	std::string damagetemp, currentHPtemp, totalHPtemp, leveltemp, exptemp;
+	std::string damagetemp, currentHPtemp, totalHPtemp, leveltemp, exptemp, decktemp;
 	inData.open("save-game.txt");
 	if (inData.peek() <= 2)
 	{	
@@ -63,6 +78,11 @@ void Character::loadData()
 		std::getline(inData, totalHPtemp, '-');
 		std::getline(inData, leveltemp, '-');
 		std::getline(inData, exptemp, '-');
+		for (int i = 0; i < deckSize; i++)
+		{
+			std::getline(inData, decktemp, '-');
+			deck[i] = std::stoi(decktemp);
+		}
 		damage = std::stoi(damagetemp);
 		currentHP = std::stoi(currentHPtemp);
 		totalHP = std::stoi(totalHPtemp);
@@ -77,20 +97,29 @@ void Character::loadData()
 
 }
 
-std::string Character::randomAttack(Character* character)
+int Character::randomAttack(Character* character)
 {
-	std::string randAttack = " ";
+	int randAttack = -1;
 	do
 	{
-		int randNum = dist(rng);
-		randAttack = rps[randNum][0];
-	} while (randAttack == " ");
+		int randNum = deckDist(rng);
+		randAttack = deck[randNum];
+	} while (randAttack == -1);
 	return randAttack;
+}
+
+void Character::randomDeck(Character * character)
+{
+	for (int i = 0; i < deckSize; i++)
+	{
+		this->deck[i] = rpsValues[dist(rng)];
+	}
 }
 
 void Character::newChar()
 {
 	promptName();
+	startingDeck();
 	setLevel();
 	setStats();
 	setExp();
@@ -100,17 +129,21 @@ void Character::newOpponent(Character* character)
 {
 	setName();
 	setLevel(character);
+	if (level == 1)
+	{
+		startingDeck();
+	}
+	else
+	{
+		randomDeck(this);
+	}
 	setStats();
 }
 
 void Character::setName()
 {
-	int randNum = dist(rng);
-	std::string tempname = rps[1][0];
-	charName = tempname + " " + std::to_string(namesDist(rng));
-	std::cout << "charName: " << charName << std::endl;
-	std::cout << "randNum: " << randNum << std::endl;
-	std::cout << "rps[randnum][0]: " << rps[randNum][0] << std::endl;
+	std::string randName = "tempname ";
+	charName = randName + std::to_string(namesDist(rng));
 }
 
 void Character::setName(std::string name)
@@ -144,6 +177,11 @@ void Character::setExp()
 	experience = 0;
 }
 
+int Character::getLevel()
+{
+	return level;
+}
+
 void Character::print()
 {
 	std::cout << "Name: " <<
@@ -153,22 +191,23 @@ void Character::print()
 		damage << ", Current HP: " <<
 		currentHP << ",  Max HP: " <<
 		totalHP << std::endl;
-}
+	std::cout << "Current deck: ";
+	listDeck();
+	std::cout << std::endl;
+}	
 
 void Character::listAttacks()
 {
-	const int attackWidth = 11;
-	const int columns = 8;
+	static constexpr int attackWidth = 11;
+	static constexpr int columns = 8;
 	const std::string separator = " |";
-	const int total_width = (attackWidth * columns) + separator.size() * columns;
-	const std::string line = separator + std::string(total_width - 1, '-') + '|';
-	std::cout << std::endl << line << std::endl;
+	std::cout << std::endl;
 	for (int i = 0; i < choices- 5; i += columns)
 	{
 		std::cout << separator;
 		for (int j = i; j < columns + i; j++)
 		{
-			std::cout << std::setw(attackWidth) << rps[j][0] << separator;
+			std::cout << std::setw(attackWidth) << rpsChoices[j] << separator;
 		}
 		std::cout << std::endl;
 	}
@@ -176,8 +215,18 @@ void Character::listAttacks()
 	for (int i = 97; i < choices; i++) 
 	{
 		
-		std::cout << std::setw(attackWidth) << rps[i][0] << separator;
+		std::cout << std::setw(attackWidth) << rpsChoices[i] << separator;
 	}
+	std::cout << std::setw(0);
+}
+
+void Character::listDeck()
+{
+	for (int i = 0; i < deckSize; i++)
+	{
+		std::cout << rpsChoices[deck[i] - 1] << " ";
+	}
+	std::cout << std::endl;
 }
 
 void Character::promptName()
@@ -228,35 +277,38 @@ void Character::levelUp()
 		setExp();
 		experience += overage;
 		std::cout << "Level up!" << std::endl;
+		if (level == 2)
+		{
+			std::cout << "You can now change your deck loadout by typing 'deck' anytime outside of battle!" << std::endl;
+		}
 	}
 }
 
-void Character::rewards(Character* player, Character* opponent)
+void Character::rewards(Character* opponent)
 {
 	int exp;
 	exp = (10 * opponent->level);
 	std::cout << "You gained " << exp << " exp!" << std::endl;
-	player->experience += exp;
+	this->experience += exp;
 	levelUp();
 }
 
-void Character::battle(Character* player, Character* opponent)
+void Character::battle(Character* opponent)
 {
 	std::cout << "Your opponent is: " << opponent->charName << std::endl;
-	while (player->currentHP > 0 && opponent->currentHP > 0)
+	while (this->currentHP > 0 && opponent->currentHP > 0)
 	{
-		std::string playerChoice, opponentChoice;
-		int result;
-		playerChoice = selectAttack();
+		int result, opponentChoice;
+		int playerChoice = selectAttack();
 		opponentChoice = randomAttack(opponent); // rolls a number between 0- amount of choices
-		std::cout << "Opponent chose: " << opponentChoice << std::endl;
-		result = comparingChoices(attackType(playerChoice), attackType(opponentChoice));
-		results(result, playerChoice, opponentChoice, player, opponent);
+		std::cout << "Opponent chose: " << convertToString(opponentChoice) << std::endl;
+		result = comparingChoices(playerChoice, opponentChoice);
+		results(result, playerChoice, opponentChoice, opponent);
 	}
-	if (player->currentHP > 0)
+	if (this->currentHP > 0)
 	{
 		std::cout << "You won the battle!" << std::endl;
-		rewards(player, opponent);
+		rewards(opponent);
 	}
 	else
 	{
@@ -264,7 +316,7 @@ void Character::battle(Character* player, Character* opponent)
 	}
 }
 
-void Character::results(int result, std::string playerChoice, std::string opponentChoice, Character* player, Character* opponent)
+void Character::results(int result, int playerChoice, int opponentChoice, Character* opponent)
 {
 	if (result == 0)
 	{
@@ -272,17 +324,17 @@ void Character::results(int result, std::string playerChoice, std::string oppone
 	}
 	else if (result == 1)
 	{
-		std::cout << opponentChoice << " beats " << playerChoice
+		std::cout << convertToString(opponentChoice) << " beats " << convertToString(playerChoice)
 		<< ", You lose!" << std::endl;
-		player->currentHP -= opponent->damage;
+		this->currentHP -= opponent->damage;
 		std::cout << "You take " << opponent->damage << " damage" << std::endl;	
 	}
 	else if (result == 2)
 	{
-		std::cout << playerChoice << " beats " << opponentChoice
+		std::cout << convertToString(playerChoice) << " beats " << convertToString(opponentChoice)
 		<< ", You win!" << std::endl;
-		opponent->currentHP -= player->damage;
-		std::cout << "You deal " << player->damage << " damage to your opponent!" << std::endl;
+		opponent->currentHP -= this->damage;
+		std::cout << "You deal " << this->damage << " damage to your opponent!" << std::endl;
 		
 	}
 	else if (result == 3)
@@ -304,33 +356,84 @@ int Character::comparingChoices(int userChoice, int opponentChoice) const
 		return 1;
 }
 
-int Character::attackType(std::string choice)
+int Character::attackType(std::string choice) //maybe more to change
 {
 	int counter = 0;
 	for (int i = 0; i < choices; i++)
 	{
-		if (choice == rps[i][0])
+		if (choice == rpsChoices[i])
 		{
-			return stoi(rps[i][1]);
+			return rpsValues[i];
 		}
-		else if (choice != rps[i][0])
+		else if (choice != rpsChoices[i])
 		{
 			counter++;
 		}
 		if (counter == choices)
 		{
-			attackType(selectAttack());
+			selectAttack();
+			break;
 		}
 
 	}
 }
 
-std::string Character::selectAttack()
+int Character::selectAttack()
 {
 	std::string choice = "";
 	std::cout << "Choose your attack: ";
+	listDeck();
+	std::cout << std::endl;
+	std::cin >> choice;
+	return attackType(formatText(choice));
+}
+
+int Character::selectfromAll()
+{
+	std::string choice = "";
+	std::cout << "Choose your deck attacks: ";
 	listAttacks();
 	std::cout << std::endl;
-	std::getline(std::cin, choice);
-	return formatText(choice);
+
+	std::cin >> choice;
+	int counter = 0;
+	for (int i = 0; i < choices; i++)
+	{
+		if (formatText(choice) == rpsChoices[i])
+		{
+			std::cout << "stored " << rpsChoices[i] << std::endl;
+			return rpsValues[i];
+		}
+		else if (choice != rpsChoices[i])
+		{
+			counter++;
+		}
+		if (counter == choices)
+		{
+			selectfromAll();
+			break;
+		}
+
+	}
+}
+
+void Character::startingDeck()
+{
+	deck[0] = 10;
+	deck[1] = 61;
+	deck[2] = 18;
+}
+
+void Character::changeDeck()
+{
+	for (int i = 0; i < deckSize; i++)
+	{
+		deck[i] = selectfromAll();
+	}
+	
+}
+
+std::string Character::convertToString(int number)
+{
+	return rpsChoices[number - 1];
 }
